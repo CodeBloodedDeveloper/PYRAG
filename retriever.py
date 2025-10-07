@@ -7,11 +7,9 @@ from embeddings import embed_documents_local
 
 @st.cache_resource
 def get_collection():
-    if _collection is None:
-        _chroma_client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
-        _collection = _chroma_client.get_or_create_collection("shark_tank_data")
-    return _collection
-
+    _chroma_client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
+    return _chroma_client.get_or_create_collection("shark_tank_data")
+    
 def retrieve(query, k=5, return_digest=True):
     """
     Retrieves top-k relevant chunks and returns both structured items and a small digest string.
