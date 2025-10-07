@@ -5,17 +5,14 @@ from emb_cache import EmbeddingCache
 import streamlit as st
 import numpy as np
 
-_model = None
 @st.cache_resource
 def get_local_model(model_name="all-MiniLM-L6-v2"):
-    global _model
-    if _model is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-        except Exception as e:
-            raise RuntimeError("sentence-transformers not installed. Install it or use remote embeddings.") from e
-        _model = SentenceTransformer(model_name)
-    return _model
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        raise RuntimeError("sentence-transformers is not installed. Please add it to requirements.txt")
+    return SentenceTransformer(model_name)
+
 
 def embed_documents_local(docs, batch_size=32):
     """
