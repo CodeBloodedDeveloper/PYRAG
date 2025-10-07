@@ -2,10 +2,11 @@
 # Provides local embedding functions with persistent caching.
 # Falls back to raising an error if sentence-transformers is not available.
 from emb_cache import EmbeddingCache
+import streamlit as st
 import numpy as np
 
 _model = None
-
+@st.cache_resource
 def get_local_model(model_name="all-MiniLM-L6-v2"):
     global _model
     if _model is None:
