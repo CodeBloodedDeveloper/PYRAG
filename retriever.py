@@ -10,7 +10,7 @@ def get_collection():
     _chroma_client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
     return _chroma_client.get_or_create_collection("shark_tank_data")
     
-def retrieve(query, k=5, return_digest=True):
+def retrieve(query, k=50, return_digest=True):
     """
     Retrieves top-k relevant chunks and returns both structured items and a small digest string.
     """
