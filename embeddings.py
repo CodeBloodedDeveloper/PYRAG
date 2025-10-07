@@ -4,7 +4,7 @@ import streamlit as st
 import numpy as np
 
 @st.cache_resource
-def get_local_model(model_name="all-MiniLM-L6-v2"):
+def get_local_model(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2"):
     """
     Loads and caches the SentenceTransformer model.
     """
