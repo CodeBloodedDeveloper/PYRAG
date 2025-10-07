@@ -7,13 +7,15 @@ from ingest import ingest_json_file
 from config import VECTOR_DB_DIR
 
 # --- Database Initialization on First Run ---
-# A simple flag to ensure this runs only once per session.
-if "db_initialized" not in st.session_state:
-    if not os.path.exists(VECTOR_DB_DIR):
-        with st.spinner("First-time setup: Building the vector database from source data..."):
-            ingest_json_file()
-        st.toast("Database built successfully!", icon="✅")
-    st.session_state.db_initialized = True
+# This is a simple, robust check that runs each time the app starts.
+# If the database directory doesn't exist, it gets created.
+if not os.path.exists(VECTOR_DB_DIR):
+    with st.spinner("First-time setup: Building the vector database from source data. This may take a moment..."):
+        ingest_json_file()
+    st.success("Database built successfully! You can now ask questions.")
+    # A small trick to stop and rerun the app after the database is built,
+    # ensuring all components load correctly.
+    st.rerun()
 
 # --- Main App ---
 
@@ -37,7 +39,7 @@ if st.button(f"Ask the {role}"):
                 result = run_agent(role, query)
 
                 st.info(f"**Answer from {result.get('role', 'Agent')}:**")
-                st.write(result.get("answer", "No answer found."))
+                st.write(result.get('answer', "No answer found."))
 
                 st.markdown("---")
                 st.subheader("Evidence Used")
