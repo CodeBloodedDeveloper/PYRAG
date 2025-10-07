@@ -1,28 +1,29 @@
 # New CODE/ingest.py
+
 import json, uuid, os
 from config import VECTOR_DB_DIR
-import chromadb
+import chromadb # type: ignore
 from embeddings import embed_documents_with_cache
 from chunker import smart_chunk
+
+# --- New Path Logic ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# ---
 
 # --- ChromaDB Setup ---
 client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
 collection = client.get_or_create_collection("shark_tank_data")
 
-def check_if_ingestion_needed():
-    """Checks if the collection already has documents."""
-    if collection.count() > 0:
-        print("✅ Database already contains data. Ingestion is not needed.")
-        return True
-    return False
-
-def ingest_json_file(path="./sample_data/conversations.json"):
+# The function's default path now uses the absolute path
+def ingest_json_file(path=os.path.join(BASE_DIR, "sample_data", "conversations.json")):
     """
     Ingests conversations.json into ChromaDB by correctly parsing its nested structure.
     """
     if not os.path.exists(path):
         print(f"❌ Input file not found: {path}")
         return
+    # ... the rest of the file is unchanged ...
+    # ... just make sure this function signature is updated ...
 
     with open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -59,11 +60,14 @@ def ingest_json_file(path="./sample_data/conversations.json"):
     chunked_docs = []
     chunk_sources = []
     for i, d in enumerate(raw_docs):
+        # Find the original item in the data list to get the file_name
+        # This is more robust than relying on the index `i` if `raw_docs` was filtered
+        original_item = next((item for item in data if item.get("content", {}).get("title") in d), None)
+        
         chunks = smart_chunk(d, max_tokens=500, overlap_tokens=100)
         for c_idx, c in enumerate(chunks):
             chunked_docs.append(c)
-            # Use the original file_name from the JSON as the source
-            source_file = data[i].get("file_name", path)
+            source_file = original_item.get("file_name", path) if original_item else path
             chunk_sources.append({"source_file": source_file, "index": i, "chunk_index": c_idx})
 
     if not chunked_docs:
@@ -77,9 +81,3 @@ def ingest_json_file(path="./sample_data/conversations.json"):
 
     collection.upsert(ids=ids, embeddings=vectors, metadatas=metadatas, documents=previews)
     print(f"🚀 Ingested {len(previews)} chunk(s) into ChromaDB from {len(raw_docs)} source document(s).")
-
-if __name__ == "__main__":
-    already = check_if_ingestion_needed()
-    if not already:
-        print("Starting data ingestion...")
-        ingest_json_file()
