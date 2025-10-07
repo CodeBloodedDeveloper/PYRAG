@@ -22,7 +22,7 @@ except (ImportError, KeyError):
 
 # Models & Vector DB config
 EMBED_MODEL = "models/embedding-001"
-CHAT_MODEL = "gemini-1.5-flash-latest"
+CHAT_MODEL = "gemini-2.0-flash"
 # Use an absolute path for the vector database
 VECTOR_DB_DIR = os.path.join(BASE_DIR, "chroma_store")
 

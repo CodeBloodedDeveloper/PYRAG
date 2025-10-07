@@ -1,4 +1,4 @@
-# emb_cache.py
+
 import shelve
 import hashlib
 from pathlib import Path
