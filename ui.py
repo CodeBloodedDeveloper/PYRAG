@@ -7,21 +7,15 @@ from ingest import ingest_json_file
 from config import VECTOR_DB_DIR
 
 # --- Database Initialization on First Run ---
-# This function runs once and caches the result to avoid re-running.
-@st.cache_resource
-def initialize_database():
-    """
-    Checks if the vector database exists. If not, it builds it from the source data.
-    """
+# A simple flag to ensure this runs only once per session.
+if "db_initialized" not in st.session_state:
     if not os.path.exists(VECTOR_DB_DIR):
-        st.info("First-time setup: Building the vector database from source data. This may take a moment...")
-        ingest_json_file()
-        st.success("Database built successfully! You can now ask questions.")
+        with st.spinner("First-time setup: Building the vector database from source data..."):
+            ingest_json_file()
+        st.toast("Database built successfully!", icon="✅")
+    st.session_state.db_initialized = True
 
 # --- Main App ---
-
-# Call the initialization function at the start of the app
-initialize_database()
 
 st.title("Multi-Agent AI System 🤖")
 st.subheader("Query the executive team about the business.")
@@ -47,9 +41,8 @@ if st.button(f"Ask the {role}"):
 
                 st.markdown("---")
                 st.subheader("Evidence Used")
-                # Ensure evidence is not None before trying to display it
                 evidence = result.get("evidence_used", "No evidence data provided.")
-                if evidence:
+                if evidence and isinstance(evidence, (list, dict)):
                     st.json(evidence)
                 else:
                     st.write(evidence)
