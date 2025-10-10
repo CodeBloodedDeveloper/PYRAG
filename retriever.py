@@ -1,14 +1,21 @@
 # New CODE/retriever.py
-import chromadb
-import streamlit as st 
+import chromadb 
 from config import VECTOR_DB_DIR
 from embeddings import embed_documents_local
 
 
-@st.cache_resource
+_CHROMA_COLLECTION = None
+
 def get_collection():
-    _chroma_client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
-    return _chroma_client.get_or_create_collection("shark_tank_data")
+    """
+    Initializes and returns a ChromaDB collection, caching it globally.
+    """
+    global _CHROMA_COLLECTION
+    if _CHROMA_COLLECTION is None:
+        _chroma_client = chromadb.PersistentClient(path=VECTOR_DB_DIR)
+        _CHROMA_COLLECTION = _chroma_client.get_or_create_collection("shark_tank_data")
+    return _CHROMA_COLLECTION
+
     
 def retrieve(query, k=50, return_digest=True):
     """
