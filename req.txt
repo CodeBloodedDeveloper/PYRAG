@@ -4,6 +4,7 @@
 #
 #    pip-compile requirements.in
 #
+streamlit
 annotated-types==0.7.0
     # via pydantic
 anyio==4.11.0
