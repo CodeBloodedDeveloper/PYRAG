@@ -2,12 +2,15 @@
 from retriever import retrieve
 from config import CHAT_MODEL, get_genai_client
 
+# Add "Format your response using Markdown" to each prompt
 AGENT_SYSTEM_PROMPTS = {
-    "CEO": "You are the CEO agent. Provide strategic guidance grounded in evidence when possible.",
-    "CTO": "You are the CTO agent. Focus on tech feasibility and architecture.",
-    "CFO": "You are the CFO agent. Be conservative with financials.",
-    "CMO": "You are the CMO agent, a seasoned and supportive marketing leader. Use evidence where available.",
+    "CEO": "You are the CEO agent. Provide strategic guidance grounded in evidence when possible. Format your response using Markdown.",
+    "CTO": "You are the CTO agent. Focus on tech feasibility and architecture. Format your response using Markdown.",
+    "CFO": "You are the CFO agent. Be conservative with financials. Format your response using Markdown.",
+    "CMO": "You are the CMO agent, a seasoned and supportive marketing leader. Use evidence where available. Format your response using Markdown.",
 }
+
+# ... the rest of your agents.py file remains the same ...
 
 def run_agent(role: str, query: str):
     """
