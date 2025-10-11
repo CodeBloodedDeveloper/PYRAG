@@ -1,4 +1,7 @@
+# app.py
+
 import os
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -17,36 +20,48 @@ async def lifespan(app: FastAPI):
     This function runs once when the application starts.
     It checks if the vector database exists and ingests data if it doesn't.
     """
-    print("Checking for vector database on startup...")
-    # Check if the chroma_store directory exists
-    if not os.path.exists(VECTOR_DB_DIR):
-        print(f"Database not found at {VECTOR_DB_DIR}. Starting one-time ingestion...")
-        # If it doesn't exist, run your ingestion script
-        ingest_json_file()
-        print("Ingestion complete. Application is ready.")
-    else:
-        print("Database already exists. Skipping ingestion.")
-    
+    print("--- Application starting up... ---")
+    try:
+        # Check if the chroma_store directory exists
+        if not os.path.exists(VECTOR_DB_DIR) or not os.listdir(VECTOR_DB_DIR):
+            print(f"Database not found or empty at {VECTOR_DB_DIR}.")
+            print("--- Starting one-time data ingestion... ---")
+            
+            # If it doesn't exist, run your ingestion script
+            ingest_json_file()
+            
+            print("--- Ingestion complete. Application is ready. ---")
+        else:
+            print("--- Database found. Skipping ingestion. ---")
+    except Exception as e:
+        # If any error occurs during startup, log it and exit.
+        print(f"FATAL: An error occurred during startup ingestion: {e}", file=sys.stderr)
+        # You might want to exit if ingestion is critical and fails
+        # sys.exit(1)
+
     # This 'yield' is where the application runs
     yield
     # Code below 'yield' would run on shutdown
-    print("Application shutting down.")
+    print("--- Application shutting down. ---")
 # ------------------------------------
-app = FastAPI()
+
+
+# Initialize the FastAPI app with the lifespan manager
+app = FastAPI(lifespan=lifespan)
 
 # --- Add CORS Middleware ---
-# This allows your frontend (running on any domain) to communicate with your backend.
-origins = ["*"] # In production, you would restrict this to your frontend's domain
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"], # Allows all methods (GET, POST, etc.)
-    allow_headers=["*"], # Allows all headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 # -------------------------
 
+# ... (the rest of your app.py remains the same) ...
 class QueryRequest(BaseModel):
     role: str
     query: str
@@ -63,5 +78,4 @@ def ask_post(request: QueryRequest):
 @app.get("/ask/{role}")
 def ask_get(role: str, query: str):
     result = run_agent(role, query)
-
     return result
