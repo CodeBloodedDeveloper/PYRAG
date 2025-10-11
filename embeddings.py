@@ -3,7 +3,7 @@ from config import get_genai_client
 
 _LOCAL_MODEL = None
 
-def get_local_model(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2"):
+def get_local_model(model_name="sentence-transformers/all-MiniLM-L6-v2"):
     """
     Loads and caches the SentenceTransformer model.
     """
