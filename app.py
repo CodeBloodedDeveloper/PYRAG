@@ -1,8 +1,37 @@
+import os
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from pydantic import BaseModel
 from agents import run_agent
-from fastapi.middleware.cors import CORSMiddleware # Import the CORS middleware
+from fastapi.middleware.cors import CORSMiddleware
 
+# --- IMPORTS FOR STARTUP INGESTION ---
+from ingest import ingest_json_file
+from config import VECTOR_DB_DIR
+# ------------------------------------
+
+# --- LIFESPAN FUNCTION TO RUN ON STARTUP ---
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """
+    This function runs once when the application starts.
+    It checks if the vector database exists and ingests data if it doesn't.
+    """
+    print("Checking for vector database on startup...")
+    # Check if the chroma_store directory exists
+    if not os.path.exists(VECTOR_DB_DIR):
+        print(f"Database not found at {VECTOR_DB_DIR}. Starting one-time ingestion...")
+        # If it doesn't exist, run your ingestion script
+        ingest_json_file()
+        print("Ingestion complete. Application is ready.")
+    else:
+        print("Database already exists. Skipping ingestion.")
+    
+    # This 'yield' is where the application runs
+    yield
+    # Code below 'yield' would run on shutdown
+    print("Application shutting down.")
+# ------------------------------------
 app = FastAPI()
 
 # --- Add CORS Middleware ---
@@ -34,4 +63,5 @@ def ask_post(request: QueryRequest):
 @app.get("/ask/{role}")
 def ask_get(role: str, query: str):
     result = run_agent(role, query)
+
     return result
