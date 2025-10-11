@@ -1,18 +1,20 @@
-# New CODE/embeddings.py
-
-import streamlit as st
 import numpy as np
+from config import get_genai_client
 
-@st.cache_resource
+_LOCAL_MODEL = None
+
 def get_local_model(model_name="sentence-transformers/paraphrase-MiniLM-L3-v2"):
     """
     Loads and caches the SentenceTransformer model.
     """
-    try:
-        from sentence_transformers import SentenceTransformer
-    except ImportError:
-        raise RuntimeError("sentence-transformers is not installed. Please add it to requirements.txt")
-    return SentenceTransformer(model_name)
+    global _LOCAL_MODEL
+    if _LOCAL_MODEL is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError:
+            raise RuntimeError("sentence-transformers is not installed. Please add it to requirements.txt")
+        _LOCAL_MODEL = SentenceTransformer(model_name)
+    return _LOCAL_MODEL
 
 def embed_documents_local(docs, batch_size=32):
     """
@@ -26,11 +28,11 @@ def embed_documents_local(docs, batch_size=32):
 
 def embed_documents_with_cache(docs, use_local=True, batch_size=32):
     """
-    Simplified function that bypasses the cache and directly embeds documents.
-    This is for debugging the emb_cache.py import error.
+    Embeds a list of documents using either a local or a remote model.
     """
-    if not use_local:
-        raise NotImplementedError("This simplified version only supports local embeddings.")
-    
-    print(f"Embedding {len(docs)} documents directly (caching disabled).")
-    return embed_documents_local(docs, batch_size=batch_size)
+    if use_local:
+        return embed_documents_local(docs, batch_size=batch_size)
+    else:
+        return embed_documents_remote(docs)
+
+
