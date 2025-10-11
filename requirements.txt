@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements.in
 #
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 annotated-types==0.7.0
     # via pydantic
 anyio==4.11.0
@@ -311,7 +313,7 @@ tokenizers==0.22.1
     # via
     #   chromadb
     #   transformers
-torch==2.8.0
+torch==2.8.0+cpu
     # via sentence-transformers
 tqdm==4.67.1
     # via
