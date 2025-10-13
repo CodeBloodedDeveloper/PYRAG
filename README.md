@@ -29,8 +29,8 @@ Follow these steps to set up and run the application on your local machine.
 
 First, clone this repository to your local machine:
 ```bash
-git clone <your-repository-url>
-cd <your-repository-directory>
+git clone [<your-repository-url>](https://github.com/CodeBloodedDeveloper/PYRAG.git)
+cd PYRAG/PYRAG-main
 ````
 
 ### 3\. Create a Virtual Environment
@@ -139,7 +139,4 @@ EXPOSE 7860
 # Command to run your Uvicorn server.
 # The app will be accessible at port 7860 within the container.
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]
-```
-
-```
 ```
