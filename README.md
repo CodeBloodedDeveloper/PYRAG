@@ -1,4 +1,4 @@
-````markdown
+
 # Multi-Agent RAG System with Gemini & ChromaDB
 
 This project is a Python-based backend for a multi-agent AI application. It uses a Retrieval-Augmented Generation (RAG) architecture to provide contextual information to different AI agent personas (CEO, CTO, CFO, CMO). The backend is built with FastAPI, uses Google's Gemini Pro for generative capabilities, and ChromaDB as a persistent vector store.
