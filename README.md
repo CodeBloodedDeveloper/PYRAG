@@ -62,9 +62,7 @@ The application requires a Google Gemini API key.
 
 1.  Create a file named `.env` in the root directory of the project.
 
-2.  Copy the contents from `.env.example` into your new `.env` file.
-
-3.  Add your Google Gemini API key to the `.env` file:
+2.  Add your Google Gemini API key to the `.env` file:
 
     ```env
     GEMINI_API_KEY="your_gemini_api_key_here"
