@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- This tag is essential for mobile responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>C-Suite AI Advisor</title>
 
@@ -22,6 +23,11 @@
         
         * { box-sizing: border-box; }
 
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--background-color);
@@ -29,23 +35,23 @@
             margin: 0;
             display: flex;
             justify-content: center;
-            height: 100vh;
-            overflow: hidden;
+            align-items: center; /* Vertically center the container on desktop */
         }
         
         .chat-container {
             width: 100%;
             max-width: 800px;
-            height: 100%;
+            height: 95vh; /* Use viewport height with a small margin */
+            max-height: 900px;
             display: flex;
             flex-direction: column;
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(10px);
             border-radius: 16px;
-            margin: 20px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
         }
 
         .chat-header {
@@ -54,6 +60,7 @@
             text-align: center;
             font-weight: 600;
             background: rgba(0,0,0,0.2);
+            flex-shrink: 0;
         }
 
         .chat-log {
@@ -97,13 +104,14 @@
         .avatar.CFO-avatar { background-color: #16a34a; }
         .avatar.CTO-avatar { background-color: #be185d; }
         .avatar.CMO-avatar { background-color: #d97706; }
-        .avatar.default-avatar { background-color: #64748b; }
+        .avatar.System-avatar, .avatar.default-avatar { background-color: #64748b; }
 
         .message-content {
             background: rgba(0,0,0,0.2);
             padding: 12px 16px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
+            word-break: break-word;
         }
         .message.user .message-content {
             background: var(--primary-color);
@@ -126,15 +134,18 @@
             padding: 15px 20px;
             border-top: 1px solid var(--border-color);
             position: relative;
+            flex-shrink: 0;
         }
         
         .input-wrapper {
             display: flex;
             gap: 10px;
+            align-items: flex-end;
             background-color: rgba(0,0,0,0.2);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 5px;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
         .input-wrapper:focus-within { border-color: var(--primary-color); box-shadow: 0 0 15px rgba(59, 130, 246, 0.3); }
 
@@ -147,6 +158,8 @@
             font-size: 1rem;
             font-family: inherit;
             resize: none;
+            max-height: 120px; /* Limit auto-growth */
+            overflow-y: auto;
         }
         #chat-input:focus { outline: none; }
         #chat-input::placeholder { color: var(--text-muted-color); }
@@ -160,6 +173,8 @@
             height: 40px;
             cursor: pointer;
             transition: background-color 0.2s;
+            flex-shrink: 0;
+            margin-bottom: 2px; /* Align with textarea padding */
         }
         #send-btn:hover { background-color: #2563eb; }
         #send-btn:disabled { background-color: #374151; cursor: not-allowed; }
@@ -172,11 +187,12 @@
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 8px;
-            display: none; /* Hidden by default */
+            display: none;
             flex-direction: column;
             gap: 5px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.5);
             margin-bottom: 5px;
+            z-index: 10;
         }
         .agent-btn {
             background: none;
@@ -194,6 +210,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            padding: 10px 0; /* Add some padding for visibility */
         }
         .typing-indicator .dot {
             width: 8px;
@@ -207,6 +224,58 @@
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+        
+        /* --- MOBILE FRIENDLINESS --- */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Align container to top on mobile */
+            }
+
+            .chat-container {
+                height: 100vh;
+                max-height: none;
+                margin: 0;
+                border-radius: 0;
+                border-left: none;
+                border-right: none;
+            }
+
+            .chat-header {
+                padding: 12px 15px;
+                font-size: 1rem;
+            }
+
+            .chat-log {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .message {
+                max-width: 90%;
+                gap: 10px;
+            }
+            
+            .avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 0.8rem;
+            }
+
+            .message-content {
+                padding: 10px 14px;
+                font-size: 0.95rem;
+            }
+
+            .input-area {
+                padding: 10px;
+            }
+
+            .agent-popup {
+                left: 10px;
+                width: calc(100% - 20px);
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -214,7 +283,8 @@
     <div class="chat-container">
         <div class="chat-header">C-Suite AI Advisor</div>
         <div class="chat-log" id="chat-log">
-            </div>
+            <!-- Messages will be injected here -->
+        </div>
         <div class="input-area">
              <div class="agent-popup" id="agent-popup">
                 <button class="agent-btn" data-agent="CEO">@CEO - Strategy</button>
@@ -223,7 +293,7 @@
                 <button class="agent-btn" data-agent="CMO">@CMO - Marketing</button>
             </div>
             <div class="input-wrapper">
-                <textarea id="chat-input" placeholder="Type a message, or use @ to mention an agent..." rows="1"></textarea>
+                <textarea id="chat-input" placeholder="Type a message, or use @..." rows="1"></textarea>
                 <button id="send-btn" title="Send Message">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-4.99-3.178 11.03-6.142Z"/></svg>
                 </button>
@@ -238,7 +308,7 @@
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-btn');
         const agentPopup = document.getElementById('agent-popup');
-        const markdownConverter = new showdown.Converter();
+        const markdownConverter = new showdown.Converter({ simplifiedAutoLink: true, openLinksInNewWindow: true });
         
         // --- STATE MANAGEMENT ---
         let chatHistory = [];
@@ -249,11 +319,11 @@
             chatLog.innerHTML = '';
             chatHistory.forEach(msg => {
                 const messageEl = document.createElement('div');
-                messageEl.classList.add('message', msg.role);
+                messageEl.classList.add('message', msg.role === 'user' ? 'user' : 'ai');
                 
-                const avatarName = msg.role === 'user' ? 'You' : msg.agentName || 'AI';
-                const avatarInitial = avatarName.substring(0, 2).toUpperCase();
-                const avatarClass = msg.role === 'user' ? 'user-avatar' : `${msg.agentName}-avatar` || 'default-avatar';
+                const agentName = msg.agentName || (msg.role === 'ai' ? 'AI' : 'You');
+                const avatarInitial = agentName.substring(0, 2).toUpperCase();
+                const avatarClass = `${agentName}-avatar`;
 
                 let contentHtml = '';
                 if (msg.isTyping) {
@@ -265,7 +335,7 @@
                 messageEl.innerHTML = `
                     <div class="avatar ${avatarClass}">${avatarInitial}</div>
                     <div class="message-content">
-                        ${msg.role === 'ai' ? `<div class="agent-name">${avatarName}</div>` : ''}
+                        ${msg.role === 'ai' ? `<div class="agent-name">${agentName}</div>` : ''}
                         <div class="message-text">${contentHtml}</div>
                     </div>
                 `;
@@ -278,35 +348,32 @@
             const messageText = chatInput.value.trim();
             if (!messageText || isLoading) return;
 
-            // 1. Update state & UI immediately for user message
-            chatHistory.push({ role: 'user', content: messageText });
-            renderChatLog();
-            chatInput.value = '';
-            
-            // 2. Parse for agent mention
             const mentionMatch = messageText.match(/@(\w+)/);
             const activeRole = mentionMatch ? mentionMatch[1].toUpperCase() : 'Idea Validator';
-            const query = messageText.replace(/@\w+\s*/, '').trim(); // Clean query
             
-            // 3. Set loading state
+            chatHistory.push({ role: 'user', content: messageText });
+            chatInput.value = '';
+            autoResizeTextarea(); // Reset textarea height
+            
             isLoading = true;
             sendBtn.disabled = true;
             chatHistory.push({ role: 'ai', content: '', isTyping: true, agentName: activeRole });
             renderChatLog();
 
-            // 4. Prepare request for backend
+            // Prepare history for backend, excluding the current user message and typing indicator
+            const historyForBackend = chatHistory.slice(0, -2).map(msg => ({
+                role: msg.role === 'ai' ? 'model' : 'user', // Map roles for Gemini API
+                content: msg.content
+            }));
+            
             const requestBody = {
-                // Send the history *before* the current user message
-                messages: chatHistory.slice(0, -2).map(msg => ({
-                    role: msg.role === 'ai' ? 'assistant' : 'user', // Map roles for backend
-                    content: msg.content
-                })),
+                messages: [
+                    ...historyForBackend,
+                    { role: 'user', content: messageText } // Add current message
+                ],
                 activeRole: activeRole
             };
-            // Add the current user message to the end
-            requestBody.messages.push({ role: 'user', content: messageText });
 
-            // 5. Fetch response
             try {
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
@@ -317,20 +384,24 @@
                 
                 const result = await response.json();
                 
-                // Update the typing indicator with the real message
-                chatHistory.pop(); // Remove typing indicator
-                chatHistory.push({ role: 'ai', content: result.answer, agentName: result.role });
+                chatHistory.pop();
+                chatHistory.push({ role: 'ai', content: result.answer || "I'm sorry, I couldn't generate a response.", agentName: result.role });
 
             } catch (error) {
                 console.error("Failed to fetch AI response:", error);
-                chatHistory.pop(); // Remove typing indicator
-                chatHistory.push({ role: 'ai', content: 'Sorry, I encountered an error. Please try again.', agentName: 'System' });
+                chatHistory.pop();
+                chatHistory.push({ role: 'ai', content: 'Sorry, I encountered an error. Please check the network and try again.', agentName: 'System' });
             } finally {
-                // 6. Final state update
                 isLoading = false;
                 sendBtn.disabled = false;
                 renderChatLog();
+                chatInput.focus();
             }
+        }
+
+        function autoResizeTextarea() {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = chatInput.scrollHeight + 'px';
         }
 
         // --- EVENT LISTENERS ---
@@ -343,8 +414,10 @@
         });
         
         chatInput.addEventListener('input', () => {
+            autoResizeTextarea();
             const text = chatInput.value;
-            if (text.endsWith('@')) {
+            const atIndex = text.lastIndexOf('@');
+            if (atIndex !== -1 && !text.slice(atIndex + 1).includes(' ')) {
                 agentPopup.style.display = 'flex';
             } else {
                 agentPopup.style.display = 'none';
@@ -354,7 +427,8 @@
         agentPopup.addEventListener('click', (e) => {
             if (e.target.classList.contains('agent-btn')) {
                 const agent = e.target.dataset.agent;
-                chatInput.value = chatInput.value.slice(0, -1) + `@${agent} `;
+                const atIndex = chatInput.value.lastIndexOf('@');
+                chatInput.value = chatInput.value.slice(0, atIndex) + `@${agent} `;
                 agentPopup.style.display = 'none';
                 chatInput.focus();
             }
@@ -363,7 +437,9 @@
         // --- INITIALIZATION ---
         chatHistory.push({ role: 'ai', agentName: 'System', content: 'Hello! How can I help you today? You can mention an agent like `@CMO` to ask a specific advisor.' });
         renderChatLog();
+        autoResizeTextarea();
 
     </script>
 </body>
 </html>
+
